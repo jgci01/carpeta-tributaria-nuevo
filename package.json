@@ -1,0 +1,17 @@
+{
+  "name": "carpetas-tributarias-formex",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Convierte carpetas tributarias PDF a Base64 y las envia al servicio SOAP procesaCTE (Formex / Portal Credex).",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js --abrir",
+    "serve": "node server.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carpetas Tributarias · Formex</title>
+<meta name="description" content="Convierte carpetas tributarias en PDF a Base64 y las envía al servicio SOAP procesaCTE.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Cpath d='M20 16h18l10 10v22a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2V18a2 2 0 0 1 2-2z' fill='%23ffffff'/%3E%3Cpath d='M38 16v10h10z' fill='%2399f6e4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor cabecera-fila">
+    <div class="marca">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 3v5h5"/>
+          <path d="M9 13h6M9 17h4"/>
+        </svg>
+      </span>
+      <div class="marca-texto">
+        <h1>Carpetas Tributarias <span class="flecha" aria-hidden="true">→</span> Formex</h1>
+        <p>PDF · Base64 · <code>procesaCTE</code></p>
+      </div>
+    </div>
+    <div class="salud" id="salud" data-estado="comprobando">
+      <span class="punto" aria-hidden="true"></span>
+      <span id="saludTexto">Conectando con el servidor local…</span>
+    </div>
+  </div>
+</header>
+
+<main class="contenedor rejilla">
+
+  <aside class="columna-config">
+    <section class="tarjeta">
+      <header class="tarjeta-cab">
+        <h2><span class="paso">1</span> Configuración del servicio</h2>
+        <span id="guardado" class="guardado" aria-live="polite"></span>
+      </header>
+
+      <div class="tarjeta-cuerpo">
+        <label class="campo" for="endpoint">
+          <span class="etiqueta">Endpoint <span class="insignia">editable</span></span>
+          <input id="endpoint" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+                 placeholder="http://portalcredex.cl/formex">
+          <small class="ayuda">URL del servicio SOAP entregada por Credex. Si tienes el WSDL, cópiala desde ahí.</small>
+        </label>
+
+        <div class="fila-doble">
+          <label class="campo" for="usuario">
+            <span class="etiqueta">Usuario <span class="insignia">editable</span></span>
+            <input id="usuario" type="text" autocomplete="off" spellcheck="false" placeholder="Usuario del servicio">
+          </label>
+
+          <div class="campo">
+            <label class="etiqueta" for="clave">Clave <span class="insignia">editable</span></label>
+            <div class="entrada-clave">
+              <input id="clave" type="password" autocomplete="new-password" spellcheck="false" placeholder="Clave del servicio">
+              <button id="verClave" class="boton-ojo" type="button" aria-label="Mostrar la clave" aria-pressed="false" title="Mostrar / ocultar clave">
+                <svg class="ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                  <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/>
+                </svg>
+                <svg class="ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                  <path d="M3 3l18 18"/><path d="M10.6 6.1A9.9 9.9 0 0 1 12 6c6.4 0 10 6 10 6a17 17 0 0 1-3.2 3.8"/><path d="M6.3 7.7A16.6 16.6 0 0 0 2 12s3.6 6 10 6a10 10 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <details class="avanzado">
+          <summary>Opciones avanzadas</summary>
+          <div class="avanzado-cuerpo">
+            <div class="fila-doble">
+              <label class="campo" for="origen">
+                <span class="etiqueta">Origen</span>
+                <input id="origen" type="text" spellcheck="false" placeholder="WS">
+              </label>
+              <label class="campo" for="concurrencia">
+                <span class="etiqueta">Envíos simultáneos</span>
+                <select id="concurrencia">
+                  <option value="1">1 (secuencial)</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="campo" for="soapAction">
+              <span class="etiqueta">SOAPAction <span class="opcional">(opcional)</span></span>
+              <input id="soapAction" type="text" spellcheck="false" placeholder="http://portalcredex.cl/formex/procesaCTE">
+            </label>
+
+            <div class="fila-doble">
+              <label class="campo" for="contentType">
+                <span class="etiqueta">Content-Type</span>
+                <select id="contentType">
+                  <option value="text/xml; charset=utf-8">text/xml (SOAP 1.1)</option>
+                  <option value="application/soap+xml; charset=utf-8">application/soap+xml (SOAP 1.2)</option>
+                </select>
+              </label>
+              <label class="campo" for="timeoutSeg">
+                <span class="etiqueta">Timeout (segundos)</span>
+                <input id="timeoutSeg" type="number" min="5" max="600" step="5" value="120">
+              </label>
+            </div>
+
+            <label class="interruptor" for="incluirDeclaracion">
+              <input id="incluirDeclaracion" type="checkbox">
+              <span>Incluir declaración <code>&lt;?xml …?&gt;</code> en el sobre</span>
+            </label>
+
+            <label class="interruptor" for="recordar">
+              <input id="recordar" type="checkbox">
+              <span>Recordar usuario y clave en este navegador</span>
+            </label>
+
+            <div class="aviso-privacidad">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              <span>Las credenciales se envían solo al endpoint que configures, a través de este equipo.</span>
+            </div>
+
+            <button id="probar" class="boton boton-secundario boton-ancho" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              Verificar endpoint y máquinas
+            </button>
+            <p id="resultadoPrueba" class="resultado-prueba" role="status" hidden></p>
+
+            <div id="diagMaquinas" class="diag" hidden>
+              <div class="diag-cab">
+                <span class="diag-host" id="diagHost"></span>
+                <span class="diag-resumen" id="diagResumen"></span>
+              </div>
+              <ul class="diag-lista" id="diagLista"></ul>
+              <p class="diag-nota" id="diagNota"></p>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+  </aside>
+
+  <section class="columna-principal">
+
+    <section class="tarjeta">
+      <header class="tarjeta-cab">
+        <h2><span class="paso">2</span> Carpeta tributaria</h2>
+      </header>
+
+      <div class="tarjeta-cuerpo">
+        <div id="zona" class="zona" tabindex="0" role="button" aria-label="Arrastra aquí la carpeta con los PDF o presiona Enter para seleccionar archivos">
+          <span class="zona-icono" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h7.5A1.5 1.5 0 0 1 19.5 9.5v8A1.5 1.5 0 0 1 18 19H4.5A1.5 1.5 0 0 1 3 17.5z"/>
+              <path d="M12 12v5M9.6 14.2 12 16.6l2.4-2.4"/>
+            </svg>
+          </span>
+          <p class="zona-titulo">Arrastra aquí la carpeta o los PDFs</p>
+          <p class="zona-sub">Se aceptan carpetas completas (subcarpetas incluidas) o archivos sueltos.</p>
+          <div class="zona-botones">
+            <button id="btnCarpeta" class="boton boton-primario" type="button">Seleccionar carpeta</button>
+            <button id="btnArchivos" class="boton boton-secundario" type="button">Seleccionar PDFs</button>
+          </div>
+          <button id="btnTodos" class="enlace-archivos" type="button">¿No aparecen tus PDFs? Ver todos los archivos</button>
+        </div>
+
+        <!-- Los inputs viven fuera de la zona: su click programático no debe burbujear
+             al contenedor, que abriría el selector de carpetas. -->
+        <input id="inputCarpeta" type="file" webkitdirectory directory multiple hidden>
+        <input id="inputArchivos" type="file" accept=".pdf" multiple hidden>
+        <input id="inputTodos" type="file" multiple hidden>
+
+        <div class="fila-opciones">
+          <div class="segmentado" role="radiogroup" aria-label="Modo de procesamiento">
+            <label class="segmento">
+              <input id="modoEnviar" type="radio" name="modo" value="enviar" checked>
+              <span>Enviar al servicio</span>
+            </label>
+            <label class="segmento">
+              <input id="modoBase64" type="radio" name="modo" value="base64">
+              <span>Solo convertir a Base64</span>
+            </label>
+          </div>
+          <label class="interruptor interruptor-inline" for="soloPDF">
+            <input id="soloPDF" type="checkbox" checked>
+            <span>Solo archivos PDF</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="tarjeta tarjeta-resultados">
+      <header class="tarjeta-cab">
+        <h2><span class="paso">3</span> Procesamiento</h2>
+        <div class="chips">
+          <span class="chip" id="chipTotal" title="Archivos en la lista">0 archivos</span>
+          <span class="chip chip-ok" id="chipOk">0 OK</span>
+          <span class="chip chip-error" id="chipError">0 errores</span>
+          <span class="chip" id="chipMemoria" title="Tamaño de los Base64 en memoria">0 B</span>
+        </div>
+      </header>
+
+      <div class="tarjeta-cuerpo">
+        <div class="barra-acciones">
+          <div class="acciones-izq">
+            <button id="btnProcesar" class="boton boton-primario" type="button" disabled>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+              <span id="btnProcesarTexto">Procesar</span>
+            </button>
+            <button id="btnDetener" class="boton boton-secundario" type="button" disabled>Detener</button>
+          </div>
+          <div class="acciones-der">
+            <button id="btnLiberar" class="boton boton-sutil" type="button" disabled title="Descarta los Base64 de la memoria (los PDFs siguen en la lista)">Liberar Base64</button>
+            <button id="btnExportar" class="boton boton-sutil" type="button" disabled title="Exporta el reporte a CSV">Exportar CSV</button>
+            <button id="btnLimpiar" class="boton boton-sutil" type="button" disabled>Limpiar</button>
+          </div>
+        </div>
+
+        <div class="progreso" id="progreso" hidden>
+          <div class="progreso-barra"><div class="progreso-relleno" id="progresoRelleno"></div></div>
+          <p class="progreso-texto" id="progresoTexto">0 de 0</p>
+        </div>
+
+        <div class="tabla-envoltura">
+          <table class="tabla" aria-label="Archivos y resultados">
+            <thead>
+              <tr>
+                <th class="col-num">#</th>
+                <th>Archivo</th>
+                <th class="col-tamano">Tamaño</th>
+                <th class="col-b64">Base64</th>
+                <th class="col-estado">Estado</th>
+                <th class="col-http">HTTP</th>
+                <th class="col-tiempo">Tiempo</th>
+                <th class="col-acciones">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoTabla"></tbody>
+          </table>
+          <div class="vacio" id="vacio">
+            <p>Aún no hay archivos.</p>
+            <p class="vacio-sub">Carga una carpeta tributaria para comenzar.</p>
+          </div>
+        </div>
+
+        <details class="registro-caja" id="registroCaja">
+          <summary>Registro de actividad <span class="registro-contador" id="registroContador">0</span></summary>
+          <pre id="registro" class="registro"></pre>
+        </details>
+      </div>
+    </section>
+
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie-fila">
+    <p><strong>Uso local.</strong> Los PDF se leen en tu navegador y se envían solo al endpoint configurado.</p>
+    <p class="pie-version">v1.1.0 · procesaCTE</p>
+  </div>
+</footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <header class="modal-cab">
+      <div>
+        <h3 id="modalTitulo">Detalle</h3>
+        <p id="modalMeta" class="modal-meta"></p>
+      </div>
+      <button id="modalCerrar" class="boton-icono" type="button" aria-label="Cerrar">✕</button>
+    </header>
+    <textarea id="modalTexto" class="modal-texto" readonly spellcheck="false"></textarea>
+    <footer class="modal-pie">
+      <span id="modalAviso" class="modal-aviso"></span>
+      <div class="modal-acciones">
+        <button id="modalCopiar" class="boton boton-secundario" type="button">Copiar</button>
+        <a id="modalDescargar" class="boton boton-primario" download>Descargar</a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<div class="avisos" id="avisos" aria-live="polite"></div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
